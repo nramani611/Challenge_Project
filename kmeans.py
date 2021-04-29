@@ -47,6 +47,9 @@ def round_all(array):
     return array
 
 def graphCluster(numClusters, d, data):
+    colors = ['red', 'blue', 'orange', 'green', 'black']
+    colorCounter = 0
+    colorDict = dict()
     #data = pd.read_excel(file)
     d = round_all(d)
     for j in range(numClusters):
@@ -63,6 +66,9 @@ def graphCluster(numClusters, d, data):
         for i, ax in zip(range(df.shape[0]), axs):
             filename = df.iloc[i]
             directory = get_directory(filename)
+            if directory not in colorDict.keys():
+                colorDict[directory] = colors[colorCounter]
+                colorCounter += 1
             print(str(i) + ": " + filename)
 
             try:
@@ -73,7 +79,7 @@ def graphCluster(numClusters, d, data):
             graph = graph.to_numpy()
             graph = removeData(graph, 20)
 
-            ax.plot(graph[:, 0], graph[:, 1])
+            ax.plot(graph[:, 0], graph[:, 1], color = colorDict[directory])
             ax.axis('off')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -87,6 +93,9 @@ def graphCluster(numClusters, d, data):
             ax.text(0, 1, dataString, transform=ax.transAxes, fontsize = 6)
             #ax.text(0.875, 0.375, round(d[j][i], 3), transform=ax.transAxes, fontsize = 8)
         plt.show(block=False)
+
+    for key in colorDict.keys():
+        print(key, colorDict[key])
     x = input()
 
 def distance(one, two):
