@@ -53,7 +53,7 @@ def graphCluster(numClusters, d, data):
     #data = pd.read_excel(file)
     d = round_all(d)
     for j in range(numClusters):
-        df = pd.read_excel('Clusters.xls')
+        df = pd.read_excel('Clusters_Final.xls')
         df = df.iloc[:, j]
         df = df.dropna()
 
@@ -173,6 +173,7 @@ def k_means(filename, num):
         colCounter += 1
 
     wb.save('Clusters.xls')
+    np.savetxt('ClusterValues.txt', kMeans.cluster_centers_)
     return kMeans.cluster_centers_, df
 
 
