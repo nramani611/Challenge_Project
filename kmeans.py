@@ -53,7 +53,7 @@ def graphCluster(numClusters, d, data):
     #data = pd.read_excel(file)
     d = round_all(d)
     for j in range(numClusters):
-        df = pd.read_excel('Clusters_Final.xls')
+        df = pd.read_excel('Clusters.xls')
         df = df.iloc[:, j]
         df = df.dropna()
 
