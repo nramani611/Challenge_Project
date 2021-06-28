@@ -225,6 +225,23 @@ def write(filenames, scores, output):
 
     wb.save(output)
 
+def graph(directory, filename):
+    try:
+        df = pd.read_excel(directory+filename)
+    except:
+            df = pd.read_csv(directory+filename)
+
+    df = df.to_numpy()
+    df = removeData(df, 20)
+    df = df[0:180, :]
+
+    plt.plot(df[:, 0], df[:, 1], c = 'b')
+    plt.axis('off')
+    plt.xticks([])
+    plt.yticks([])
+    plt.savefig('data/' + filename + '.jpg')
+    plt.close()
+
 def main():
     directory = sys.argv[1]
     filenames = []
@@ -232,6 +249,9 @@ def main():
         if filename.endswith(".xlsx") or filename.endswith(".xls"):
             filenames.append(filename)
 
+    for filename in filenames:
+        graph(directory, filename)
+    """
     filenames, scores = classify(filenames, directory)
     try:
         output = sys.argv[2]
@@ -239,6 +259,7 @@ def main():
         sys.exit(1)
 
     write(filenames, scores, output)
+    """
     sys.exit(1)
 
 if __name__ == "__main__":

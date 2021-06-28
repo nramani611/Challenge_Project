@@ -79,10 +79,11 @@ def graphCluster(numClusters, d, data):
             graph = graph.to_numpy()
             graph = removeData(graph, 20)
 
-            ax.plot(graph[:, 0], graph[:, 1], color = colorDict[directory])
+            ax.plot(graph[:, 0], graph[:, 1])#, color = colorDict[directory])
             ax.axis('off')
             ax.set_xticks([])
             ax.set_yticks([])
+            """
             for k in range(data.shape[0]):
                 if data.loc[k, 'Filename'] == filename:
                     dataString = ''
@@ -91,6 +92,7 @@ def graphCluster(numClusters, d, data):
                     dataString = dataString[:-2]
                     break
             ax.text(0, 1, dataString, transform=ax.transAxes, fontsize = 6)
+            """
             #ax.text(0.875, 0.375, round(d[j][i], 3), transform=ax.transAxes, fontsize = 8)
         plt.show(block=False)
 
@@ -126,7 +128,10 @@ def k_means(filename, num):
     k1 = KneeLocator(range(1, max), errors, curve='convex', direction='decreasing')
     print(k1.elbow)
 
-    #plt.plot([i for i in range(1, max)], errors)
+    #plt.scatter([i for i in range(1, max)], errors)
+    #plt.xlabel('Number of Clusters')
+    #plt.ylabel('SSE')
+    #plt.show()
     kMeans = KMeans(init='random', n_clusters = num, n_init = 30, max_iter = 5000000)
     #print(df)
     kMeans.fit(df.iloc[:, 1:])
