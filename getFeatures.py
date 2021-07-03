@@ -1,5 +1,6 @@
 import pandas as pd
 from scipy.signal import savgol_filter, argrelextrema, find_peaks
+from area_under_peaks_calculations import calc_aup
 import numpy as np
 from matplotlib import pyplot as plt
 import statistics as st
@@ -126,7 +127,8 @@ def peaksMin(num):
     else:
         return b
 
-def classify(d):
+def classify(filename, remove = True):
+    """
     wb = Workbook()
     sheet = wb.add_sheet('Sheet 1')
     sheet.write(0, 0, 'Filename')
@@ -134,62 +136,62 @@ def classify(d):
     sheet.write(0, 2, 'Ratio of Peaks to Ideal')
     sheet.write(0, 3, 'Ratio of Range')
     sheet.write(0, 4, 'Inverse Standard Deviation')
+    """
+    #counter = 1
 
-    counter = 1
+    #for directory in d.keys():
+        #for i in range(len(d[directory])):
+            #filename = d[directory][i]
+    print(filename)
+            #sheet.write(counter, 0, filename)
 
-    for directory in d.keys():
-        for i in range(len(d[directory])):
-            filename = d[directory][i]
-            print(filename)
-            sheet.write(counter, 0, filename)
+    try:
+        df = pd.read_excel(directory+filename)
+    except:
+        df = pd.read_csv(directory+filename, sep='\t')
 
-            try:
-                df = pd.read_excel(directory+filename)
-            except:
-                df = pd.read_csv(directory+filename, sep='\t')
+    df = df.to_numpy()
+    if remove:
+        df = removeData(df, 20)
 
-            df = df.to_numpy()
-            df = removeData(df, 20)
+    yhat = savgol_filter(df[:, 1], 31, 6)
+            #smoothError = 0
 
-            yhat = savgol_filter(df[:, 1], 31, 6)
-            smoothError = 0
+    #1. Peak finding ratio
+    peaks, _ = find_peaks(yhat)
+    peaks += 20
+    diff = []
+    if peaks[0] == 1:
+        peaks = peaks[1:]
 
-            #1. Peak finding ratio
-            peaks, _ = find_peaks(yhat)
-            peaks += 20
-            diff = []
-            if peaks[0] == 1:
-                peaks = peaks[1:]
-
-            y = np.concatenate([np.zeros(20), yhat])
-            newPeaks = findTruePeaks(peaks, y)
-            if len(newPeaks) > 6:
-                newPeaks = findBestPeaks(newPeaks)
+    y = np.concatenate([np.zeros(20), yhat])
+    newPeaks = findTruePeaks(peaks, y)
+    if len(newPeaks) > 6:
+        newPeaks = findBestPeaks(newPeaks)
                 #print(newPeaks)
 
-            ratio = len(newPeaks)/len(peaks)
-            sheet.write(counter, 1, ratio)
+    ratio = len(newPeaks)/len(peaks)
+            #sheet.write(counter, 1, ratio)
 
-            #2. Ideal peaks
-            ideal = peaksMin(len(newPeaks))
-            sheet.write(counter, 2, ideal)
+    #2. Ideal peaks
+    ideal = peaksMin(len(newPeaks))
+            #sheet.write(counter, 2, ideal)
 
-            #3. Range of peaks
-            ran = (newPeaks[-1] - newPeaks[0])/180
-            sheet.write(counter, 3, ran)
+    #3. Range of peaks
+    ran = (newPeaks[-1] - newPeaks[0])/180
+    #sheet.write(counter, 3, ran)
 
-            #4. Standard deviation of peaks
-            diff = [newPeaks[i] - newPeaks[i - 1] for i in range(1, len(newPeaks))]
-            sd = np.std(diff)
-            sheet.write(counter, 4, sd)
+    #4. Standard deviation of peaks
+    diff = [newPeaks[i] - newPeaks[i - 1] for i in range(1, len(newPeaks))]
+    sd = np.std(diff)
+            #sheet.write(counter, 4, sd)
 
-            #5. Smooth Error
-            for j in range(len(yhat)):
-                smoothError += abs(yhat[j] - df[j, 1])
-            smoothError /= len(yhat)
-            sheet.write(counter, 5, smoothError)
+    #5, 6, 7. Smooth Error
+    area_under_peaks, aup_normed, smoothed_error = calc_aup()
 
-            counter += 1
+            #counter += 1
+
+    return ratio, ideal, ran, sd, area_under_peaks, aup_normed, smoothed_error
 
     outputFile1 = 'Book1_Ex.xls'
     outputFile2 = 'Book1_Ex_1.xls'
