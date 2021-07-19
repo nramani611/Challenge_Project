@@ -178,7 +178,7 @@ def k_means(filename, num):
         colCounter += 1
 
     wb.save('Clusters.xls')
-    np.savetxt('ClusterValues.txt', kMeans.cluster_centers_)
+    np.savetxt('NewClusterValues.txt', kMeans.cluster_centers_)
     return kMeans.cluster_centers_, df
 
 

@@ -127,7 +127,7 @@ def peaksMin(num):
     else:
         return b
 
-def classify(filename, remove = True):
+def classify(filename, directory, remove = True):
     """
     wb = Workbook()
     sheet = wb.add_sheet('Sheet 1')
@@ -187,7 +187,7 @@ def classify(filename, remove = True):
             #sheet.write(counter, 4, sd)
 
     #5, 6, 7. Smooth Error
-    area_under_peaks, aup_normed, smoothed_error = calc_aup()
+    area_under_peaks, aup_normed, smoothed_error = calc_aup(directory + filename)
 
             #counter += 1
 

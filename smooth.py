@@ -235,6 +235,8 @@ def graph(directory, filename):
     df = removeData(df, 20)
     df = df[0:180, :]
 
+    yhat = savgol_filter(df[:, 1], 31, 6)
+    plt.plot(df[:, 0], yhat, c = 'r')
     plt.plot(df[:, 0], df[:, 1], c = 'b')
     plt.axis('off')
     plt.xticks([])

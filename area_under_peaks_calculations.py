@@ -6,7 +6,7 @@
 ## Use as::
 # from area_under_peaks_calculations import calc_aup
 # area_under_peaks,aup_normed,smooth_error = calc_aup(file)
-# 
+#
 
 
 
@@ -42,7 +42,7 @@ def triangle_area(left,peak,right):
     leftx,lefty = left[0],left[1]
     peakx,peaky = peak[0],peak[1]
     rightx,righty = right[0],right[1]
-    
+
     base = rightx - leftx
     height = peaky - np.mean([lefty,righty])
     area = base * height / 2
@@ -54,11 +54,11 @@ def findmaxes(y):
 def findmins(y):
     return argrelextrema(y,np.less)[0]
 
-def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
+def single_peak(MAX,mins,yhat,x,nt_to_position,print_out = False):
     '''
     Takes in a single peak and outputs the area under it. To do this it needs to find the closest
     troughs on either side and verify that they aren't too close to be considered troughs.
-    
+
     INPUT:
     MAX = the peak this function is operating on
     mins = the local minimas for the whole curve
@@ -66,7 +66,7 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
     x = nucleotide positions
     nt_to_position = dict, look up the element number of the nucleotide position
     print_out = whether to print information
-    
+
     OUTPUT:
     area = area under this peak
     left = left trough for this peak
@@ -76,7 +76,7 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
     first_trough = mins[0]
     #finding closest two peaks to a trough
     closest_trough = min(mins, key=lambda x:abs(x-MAX)) # closest trough
-    
+
     #finding the closest trough on the other side of MAX
     closest_x = np.where(mins == closest_trough)[0][0] # position in mins list of closest trough
     if closest_trough < MAX:
@@ -87,19 +87,19 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
         other_trough = min(mins, key=lambda x:abs(x-MAX))
     except:
         return 0,0,0,0
-    
+
     left_x = min(closest_trough,other_trough)
     right_x = max(closest_trough,other_trough)
-    
+
     try:
         left_xpos = nt_to_position[left_x]
         right_xpos = nt_to_position[right_x]
     except:
         return 0,0,0,0
-    
+
     left_y = yhat[left_xpos]
     right_y = yhat[right_xpos]
-    
+
     # ignore peaks that do not have a trough on either side (ie the beginning and end)
     if left_x > MAX:
         return 0,0,0,0
@@ -107,15 +107,15 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
         return 0,0,0,0
     elif MAX - left_x < peak_width or right_x - MAX < peak_width:
         return 0,0,0,0
-    
+
     if left_y > right_y:
         yhat_trim = yhat[left_xpos+peak_width:right_xpos] # exclude this trough from future search
         x_trim = np.array(x[left_xpos+peak_width:right_xpos])
-    
+
         # finding the x coordinate that shares a y-coordinate with the higher trough
         right_y = min(yhat_trim, key=lambda k:abs(k-left_y))
         right_x = x_trim[np.where(yhat_trim == right_y)][-1]
-        
+
         # Re-trim to the point we found
         right_xpos = nt_to_position[right_x]
         x_trim = np.array(x[left_xpos:right_xpos+1])
@@ -124,20 +124,20 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
 
         yhat_trim = yhat[left_xpos:right_xpos-peak_width] # exclude this trough from future search
         x_trim = np.array(x[left_xpos:right_xpos-peak_width])
-    
+
         # finding the x coordinate that shares a y-coordinate with the higher trough
         left_y = min(yhat_trim, key=lambda x:abs(x-right_y))
         left_x = x_trim[np.where(yhat_trim == left_y)][0]
-        
+
         # Re-trim to the point we found
         left_xpos = nt_to_position[left_x]
         yhat_trim = yhat[left_xpos:right_xpos+1]
         x_trim = np.array(x[left_xpos:right_xpos+1])
-    
-        
+
+
     left = [left_x,left_y]
     right = [right_x,right_y]
-    
+
     area = np.trapz(yhat_trim - min(yhat_trim)) #bring bottom of the peak to 0
     peak_y = yhat[nt_to_position[MAX]]
     peak = [MAX,peak_y]
@@ -150,19 +150,19 @@ def single_peak(MAX,mins,yhat,x,nt_to_position,print_out):
     return area,left,right,height
 
 def calc_aup(file):
-    
+
     '''
     Input: a single excel file with a curve in it.
-    
+
     Normalizes the curve y-values without the large peak at 0, smooths the curve,
     identifies peaks, and calculates the area under each peak.
-    
+
     Returns:
     area_under_peaks = sum of the area under each peak identified
     aup_normed = area_under_peaks divided by the area of the two largest peaks
     smooth_error = sum of the distance between the smoothed curve and the original curve
     '''
-    
+
     try:
         df = pd.read_excel(file)
     except:
@@ -183,12 +183,12 @@ def calc_aup(file):
     mins = findmins(yhat) + offset
     last_x = int(x[-1])
     mins = np.append(mins,last_x) # otherwise numpy converts the array to strings
-    
+
     if len(maxes) == 0 or len(mins) == 0:
         print('No maxes or No mins Found:: ',file)
         return 0,0,1000
     first_trough = mins[0] # used to trim peak at x=0 for normalization
-    
+
     ############################################################################################
     ### TRIM THE CURVE BEFORE THE FIRST TROUGH #################################################
     ############################################################################################
@@ -203,24 +203,24 @@ def calc_aup(file):
     yhat = savgol_filter(yhat, windowsize2, polyorder2)
     smooth_error = np.sum(np.absolute(np.array(yhat) - np.array(y)))
     maxes = findmaxes(yhat) + first_trough
-    
+
     xpos = list(range(len(x)))
     nt_to_position = dict(zip(x,xpos))
-    
+
     aup_list = [] #contains area under each peak
     height_list = []
     area_under_peaks = 0 # total area under all peaks for this curve
     intervals = []
     for MAX in maxes: #iterate through each peak and calculate its area
         # peaks are filtered
-        area,left,right,height = single_peak(MAX,mins,yhat,x,nt_to_position,print_out)
+        area,left,right,height = single_peak(MAX,mins,yhat,x,nt_to_position)
         area_under_peaks += area
         aup_list.append(area)
         height_list.append(height)
-        
+
         if left != 0:
             intervals.append([left,right])
-    
+
     try:
         first_second_aup = sum(nlargest(2,aup_list)) # find two largest peaks and normalize by them
         if first_second_aup != 0:
@@ -229,5 +229,5 @@ def calc_aup(file):
             aup_normed = 0
     except:
         aup_normed = 0
-        
+
     return area_under_peaks,aup_normed,smooth_error
