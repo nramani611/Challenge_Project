@@ -193,8 +193,8 @@ def classify(filename, directory, remove = True):
 
     return ratio, ideal, ran, sd, area_under_peaks, aup_normed, smoothed_error
 
-    outputFile1 = 'Book1_Ex.xls'
-    outputFile2 = 'Book1_Ex_1.xls'
+    outputFile1 = 'Train_07192020.xls'
+    outputFile2 = 'Train_07192020_1.xls'
     wb.save(outputFile1)
 
     #6. Area under the curve
